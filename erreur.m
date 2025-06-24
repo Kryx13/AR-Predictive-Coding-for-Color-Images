@@ -5,7 +5,8 @@ function erreur = calculerMatriceErreur(imageReelle, imagePredite)
         error('Les images doivent avoir la même taille.');
     end
 
-    erreur = double(imageReelle) - double(imagePredite);
+    erreur = abs(double(imageReelle) - double(imagePredite));
+    imshow(uint8(erreur));
 end
 
 function H = calc_entropie(image)
