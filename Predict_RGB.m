@@ -1,3 +1,4 @@
+%preidction_rgB
 function [Rhat, Ghat, Bhat] = Predict_RGB(img, r, g, b)
 % Input img is the original image, r/g/b are prediction coefficients
 img = double(imread(img));

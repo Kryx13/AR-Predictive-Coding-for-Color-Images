@@ -1,3 +1,4 @@
+%cal_para.m
 function [r,g,b] = Cal_para(img)
 
 img = imread(img);
@@ -7,9 +8,9 @@ R = img(:,:,1);
 G = img(:,:,2);
 B = img(:,:,3);
 [M,N] = size(R);
-Rp = padarray(R, [1,1], 'symmetri');
-Gp = padarray(G, [1,1], 'symmetri');
-Bp = padarray(B, [1,1], 'symmetri');
+Rp = padarray(R, [1,1], 'symmetric');
+Gp = padarray(G, [1,1], 'symmetric');
+Bp = padarray(B, [1,1], 'symmetric');
 
 R_left = Rp(2:M+1, 1:N);
 R_top = Rp(1:M,2:N+1);
