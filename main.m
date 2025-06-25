@@ -13,11 +13,11 @@ pkg load image
 
 %% Configuration Parameters
 config = struct();
-config.image_path = 'images/tests/Foyer.jpg';  % Change to your test image
-config.block_size = 32;                      % Block size for local method
+config.image_path = 'images/tests/pic_tag.jpg';  % Change to your test image
+config.block_size = 16;                      % Block size for local method
 config.overlap = 0;                          % Block overlap (0 = no overlap)
-config.save_results = true;                  % Save results to files
-config.show_plots = true;                    % Display visualization plots
+config.save_results = false;                  % Save results to files
+config.show_plots = false;                    % Display visualization plots
 
 % Output directories
 if ~exist('images/results/', 'dir')
