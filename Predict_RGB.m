@@ -1,36 +1,57 @@
-%preidction_rgB
-function [Rhat, Ghat, Bhat] = Predict_RGB(img, r, g, b)
-  R = img(:,:,1); G = img(:,:,2); B = img(:,:,3);
-      [M,N] = size(R);
+function [err_r, err_g, err_b, Rmed, Gmed, Bmed] = Predict_RGB(filename, r, g, b, delta)
 
-      % Mirror boundary extension
-      Rp = padarray(R, [1 1], 'symmetric');
-      Gp = padarray(G, [1 1], 'symmetric');
-      Bp = padarray(B, [1 1], 'symmetric');
+% Predicts the image and quantizes the
+% function outputs the residuals and the average of the pixels in each layer.
 
-      % Initialize prediction matrix
-      Rhat = zeros(M,N);
-      Ghat = zeros(M,N);
-      Bhat = zeros(M,N);
+img = double(imread(filename));
+R = img(:,:,1); G = img(:,:,2); B = img(:,:,3);
+[M,N] = size(R);
 
-      for i = 1:M
-          for j = 1:N
-              % Actual position after padding is i+1,j+1
-              x = i+1; y = j+1;
+% calculate the mean value
+Rmed = mean(R(:));
+Gmed = mean(G(:));
+Bmed = mean(B(:));
+Rz = R - Rmed; Gz = G - Gmed; Bz = B - Bmed;
 
-              % Extract neighboring pixels
-              R_t = Rp(x-1,y);   R_l = Rp(x,y-1);     R_c = Rp(x,y);
-              G_t = Gp(x-1,y);   G_l = Gp(x,y-1);     G_c = Gp(x,y);
-              B_t = Bp(x-1,y);   B_l = Bp(x,y-1);
+% initial error matrix
+err_r = zeros(M,N);
+err_g = zeros(M,N);
+err_b = zeros(M,N);
 
-              % R prediction
-              Rhat(i,j) = r(1)*R_t + r(2)*R_l + r(3)*G_t + r(4)*G_l + r(5)*B_t + r(6)*B_l;
+% initial prediction
+Rrec = zeros(M,N);
+Grec = zeros(M,N);
+Brec = zeros(M,N);
 
-              % G prediction
-              Ghat(i,j) = g(1)*R_t + g(2)*R_l + g(3)*G_t + g(4)*G_l + g(5)*B_t + g(6)*B_l + g(7)*R_c;
+for i = 1:M
+    for j = 1:N
+        % boundary
+        Rl = Rrec(max(i-1,1), j);
+        Rt = Rrec(i, max(j-1,1));
+        Gl = Grec(max(i-1,1), j);
+        Gt = Grec(i, max(j-1,1));
+        Bl = Brec(max(i-1,1), j);
+        Bt = Brec(i, max(j-1,1));
 
-              % B prediction
-              Bhat(i,j) = b(1)*R_t + b(2)*R_l + b(3)*G_t + b(4)*G_l + b(5)*B_t + b(6)*B_l + b(7)*R_c + b(8)*G_c;
-          end
-      end
+        % predict
+        R_pred = r(1)*Rl + r(2)*Rt + r(3)*Gl + r(4)*Gt + r(5)*Bl + r(6)*Bt;
+        G_pred = g(1)*Rl + g(2)*Rt + g(3)*Gl + g(4)*Gt + g(5)*Bl + g(6)*Bt + g(7)*R_pred;
+        B_pred = b(1)*Rl + b(2)*Rt + b(3)*Gl + b(4)*Gt + b(5)*Bl + b(6)*Bt + b(7)*R_pred + b(8)*G_pred;
+
+        %
+        r_val = Rz(i,j);
+        g_val = Gz(i,j);
+        b_val = Bz(i,j);
+
+        % calculate error and quantize
+        err_r(i,j) = round((r_val - R_pred) / delta);
+        err_g(i,j) = round((g_val - G_pred) / delta);
+        err_b(i,j) = round((b_val - B_pred) / delta);
+
+        % update the rec
+        Rrec(i,j) = R_pred + delta * err_r(i,j);
+        Grec(i,j) = G_pred + delta * err_g(i,j);
+        Brec(i,j) = B_pred + delta * err_b(i,j);
+    end
+end
 end
